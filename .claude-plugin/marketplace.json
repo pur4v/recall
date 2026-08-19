@@ -1,0 +1,19 @@
+{
+  "name": "recall",
+  "owner": {
+    "name": "pur4v"
+  },
+  "plugins": [
+    {
+      "name": "recall",
+      "source": "./",
+      "description": "Give every terminal a durable memory: capture commands + output live and on a timer, render secret-redacted Markdown per session, and resume a closed or crashed window exactly where you left off.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "license": "MIT",
+      "author": {
+        "name": "pur4v"
+      }
+    }
+  ]
+}

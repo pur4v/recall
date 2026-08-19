@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- launchd template. install-scheduler.sh substitutes @CLI@ and @INTERVAL@ and writes this to
+     ~/Library/LaunchAgents/com.pur4v.recall.plist, then launchctl-loads it. It runs
+     `recall snapshot` every @INTERVAL@ seconds so open sessions are re-rendered to Markdown
+     even if a terminal is force-closed before its own exit hook fires. -->
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.pur4v.recall</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>@CLI@</string>
+      <string>snapshot</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>@INTERVAL@</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardErrorPath</key>
+    <string>/tmp/recall.snapshot.err</string>
+    <key>StandardOutPath</key>
+    <string>/tmp/recall.snapshot.out</string>
+  </dict>
+</plist>

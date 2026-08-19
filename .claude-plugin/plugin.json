@@ -1,0 +1,23 @@
+{
+  "name": "recall",
+  "version": "0.1.0",
+  "description": "Capture and recall terminal session history — every command (with cwd, exit, duration) and, when possible, full output, rendered to a secret-redacted Markdown file per session, with live + interval capture so a closed or crashed terminal is never lost.",
+  "author": {
+    "name": "pur4v"
+  },
+  "homepage": "https://github.com/pur4v/recall",
+  "repository": "https://github.com/pur4v/recall",
+  "license": "MIT",
+  "keywords": [
+    "terminal",
+    "shell-history",
+    "session",
+    "zsh",
+    "bash",
+    "capture",
+    "resume",
+    "crash-safe",
+    "launchd",
+    "cron"
+  ]
+}
