@@ -4,6 +4,43 @@ All notable changes to this project are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/); this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-08-19
+
+### Added
+
+- **The entire context, not just the shell.** A session now bundles far more than commands and
+  output. Each rendered session carries, when available:
+  - **Conversation** — the AI CLI agent transcript from that window, via **pluggable adapters**
+    (`scripts/adapters.py`; enabled with `RECALL_AGENTS`, default `claude-code,aider`). Each
+    agent's native store is normalized to one shape, rendered to a redacted transcript under
+    `conversations/`, and **correlated** to the terminal session by working directory (or git
+    root) and overlapping time window. Ships with **Claude Code** (`~/.claude/projects/**.jsonl`,
+    flattening text/thinking/tool blocks; `RECALL_INCLUDE_THINKING=0` to drop thinking;
+    `CLAUDE_HOME` override) and **aider** (`.aider.chat.history.md`) adapters.
+  - **Files changed & git** — repo, branch, commits made during the session, a per-file
+    added/removed table, and a capped, redacted diff (raw patch in `diff/<id>.patch`).
+  - **Context trail** — every directory visited plus a small allow-listed snapshot of the
+    environment at session start.
+- **Titled session & conversation files.** Files are named by a meaningful title —
+  `add-greeting-feature-to-proj--<shortid>.md` — taken from the correlated conversation's own title
+  (Claude Code's `ai-title`, aider's first prompt) or derived from the repo/last-dir plus the most
+  distinctive commands, so the filename tells you what the session was about. The terminal id and
+  title are stored in `meta/<id>.json` and shown in the session header; a stale file is removed if
+  the title changes on re-render.
+- **`/recall:ingest`** command and `recall ingest` subcommand to import conversations on demand;
+  ingest also runs automatically inside `finalize` and `snapshot`.
+- `reference/context.md` documenting conversations, adapters, correlation, and titled files.
+
+### Changed
+
+- `index.md` now lists sessions by **title** (linked to the titled file) with the terminal id,
+  instead of by opaque id.
+- `show` / `resume` / `search` resolve a session by exact id, `last`, or a substring of the
+  id / title / filename, and read the titled render path.
+- Redaction now also covers conversation turns, diffs, commit subjects, and env values; the CI
+  secret guard and `scan_secrets.sh` cover `conversations/` and `diff/`. CI gained a
+  conversation-ingest self-check and now `py_compile`s `adapters.py`.
+
 ## [0.1.0] — 2026-08-19
 
 ### Added

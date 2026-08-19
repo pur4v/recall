@@ -36,7 +36,7 @@ case "$cmd" in
     ' >> "$RECALL_CMD" 2>/dev/null || true
     ;;
   ""|help|-h|--help)
-    echo "usage: recall <setup|begin|log|finalize|snapshot|render|list|show|search|resume|redact> ..."
+    echo "usage: recall <setup|begin|log|finalize|snapshot|ingest|render|list|show|search|resume|redact> ..."
     ;;
   *)
     exec python3 "$DIR/recall.py" "$cmd" "$@"

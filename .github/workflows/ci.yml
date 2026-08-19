@@ -20,7 +20,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck zsh
 
       - name: py_compile the engine
-        run: python3 -m py_compile skills/recall/scripts/recall.py
+        run: python3 -m py_compile skills/recall/scripts/recall.py skills/recall/scripts/adapters.py
 
       - name: shellcheck POSIX scripts
         run: |
@@ -59,18 +59,45 @@ jobs:
           set -e
           export RECALL_HOME="$(mktemp -d)"
           export RECALL_SESSION_ID="ci-0001"
-          python3 skills/recall/scripts/recall.py begin >/dev/null
-          sh skills/recall/scripts/recall.sh log 0 12 "$HOME" -- "echo hello"
-          sh skills/recall/scripts/recall.sh log 1 34 "$HOME" -- "export TOKEN=sk-shouldberedacted0000000000"
+          engine="$(pwd)/skills/recall/scripts"
+          # run begin from a non-git temp dir so the self-check doesn't diff this very checkout
+          workdir="$(mktemp -d)"; cd "$workdir"
+          python3 "$engine/recall.py" begin >/dev/null
+          sh "$engine/recall.sh" log 0 12 "$HOME" -- "echo hello"
+          sh "$engine/recall.sh" log 1 34 "$HOME" -- "export TOKEN=sk-shouldberedacted0000000000"
           printf 'building: 10%%\rbuilding: 100%%\ndone\n' > "$RECALL_HOME/raw/ci-0001.log"
-          python3 skills/recall/scripts/recall.py finalize ci-0001 >/dev/null
-          md="$RECALL_HOME/sessions/ci-0001.md"
+          python3 "$engine/recall.py" finalize ci-0001 >/dev/null
+          # filenames are titled now, not the raw id — resolve via the index / glob
+          md=$(ls "$RECALL_HOME"/sessions/*.md | head -1)
+          [ -n "$md" ] || { echo "no session rendered"; exit 1; }
           grep -q 'echo hello' "$md" || { echo "command not rendered"; exit 1; }
+          grep -q 'Terminal id' "$md" || { echo "terminal id not stored in render"; exit 1; }
           grep -q '«redacted»' "$md" || { echo "redaction did not run"; exit 1; }
           grep -q 'sk-shouldberedacted' "$md" && { echo "SECRET LEAKED into render"; exit 1; }
           grep -q 'building: 10%' "$md" && { echo "progress redraw not collapsed"; exit 1; }
           grep -q 'building: 100%' "$md" || { echo "final redraw missing"; exit 1; }
           echo "render self-check passed"
+
+      - name: conversation ingest self-check (adapter -> transcript)
+        run: |
+          set -e
+          export RECALL_HOME="$(mktemp -d)"
+          export CLAUDE_HOME="$(mktemp -d)"
+          export RECALL_AGENTS="claude-code"
+          cwd="/tmp/recall-ci-proj"
+          slug=$(printf '%s' "$cwd" | sed 's#[/.]#-#g')
+          mkdir -p "$CLAUDE_HOME/projects/$slug"
+          cat > "$CLAUDE_HOME/projects/$slug/conv.jsonl" <<JSONL
+          {"type":"user","cwd":"$cwd","timestamp":"2026-01-01T00:00:00.000Z","message":{"role":"user","content":"api_key=sk-ciLEAK00000000000000000000 please help"}}
+          {"type":"ai-title","aiTitle":"CI adapter check","sessionId":"conv"}
+          JSONL
+          python3 skills/recall/scripts/recall.py ingest
+          conv=$(ls "$RECALL_HOME"/conversations/*.md | head -1)
+          [ -n "$conv" ] || { echo "no conversation rendered"; exit 1; }
+          echo "$conv" | grep -q 'ci-adapter-check' || { echo "conversation not titled from aiTitle"; exit 1; }
+          grep -q '«redacted»' "$conv" || { echo "conversation redaction did not run"; exit 1; }
+          grep -q 'sk-ciLEAK' "$conv" && { echo "SECRET LEAKED into conversation"; exit 1; }
+          echo "conversation ingest self-check passed"
 
       - name: secret / captured-artifact guard
         run: sh skills/recall/scripts/scan_secrets.sh .

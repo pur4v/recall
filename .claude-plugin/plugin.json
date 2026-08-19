@@ -1,7 +1,7 @@
 {
   "name": "recall",
-  "version": "0.1.0",
-  "description": "Capture and recall terminal session history — every command (with cwd, exit, duration) and, when possible, full output, rendered to a secret-redacted Markdown file per session, with live + interval capture so a closed or crashed terminal is never lost.",
+  "version": "0.2.0",
+  "description": "Capture and recall a terminal window's entire working context — every command (with cwd, exit, duration), full output when possible, plus the AI CLI conversation, files changed + diff, git state, and directory/env trail — rendered to a secret-redacted, titled Markdown file per session, with live + interval capture so a closed or crashed terminal is never lost.",
   "author": {
     "name": "pur4v"
   },
@@ -12,6 +12,11 @@
     "terminal",
     "shell-history",
     "session",
+    "context",
+    "conversation",
+    "ai-cli",
+    "claude-code",
+    "aider",
     "zsh",
     "bash",
     "capture",

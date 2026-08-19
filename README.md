@@ -1,24 +1,41 @@
+![recall](banner.png)
+
 # recall
 
-**Capture and recall terminal session history — so a closed or crashed terminal is never lost.**
+**Capture and recall a terminal window's entire working context — so a closed or crashed terminal
+is never lost.**
 
 `recall` gives every terminal window a durable memory. It records what you run — **live, per
-command** (with cwd, exit code, and duration) — and, when it can, the **full output**, then
-renders each session to a clean, **secret-redacted** Markdown file. Close the terminal, reboot the
-laptop, or lose the window to a crash: the history is already on disk.
+command** (with cwd, exit code, and duration) — and, when it can, the **full output**. But a
+session is more than its shell, so recall also folds in the **AI CLI conversation** you had in that
+window (Claude Code, aider, … via pluggable adapters), the **files you changed** and their diff,
+the **git state**, and the **directory + environment trail**. It all renders to a clean,
+**secret-redacted** Markdown file, named by a meaningful **title** so the filename tells you what
+the session was about. Close the terminal, reboot the laptop, or lose the window to a crash: the
+context is already on disk.
 
 > **Kit = tooling, data = yours.** This repo contains *no captured data*. Everything recall
 > records lives under `~/.recall` (chmod 700), is secret-redacted before write, and is never
 > committed.
 
-```
-your shell ──hooks──►  ~/.recall/cmd/<id>.jsonl   (every command: ts, exit, dur, cwd)
-           ──script──► ~/.recall/raw/<id>.log      (full output, when capture is on)
-                              │
-                        recall render / snapshot / finalize
-                              ▼
-                    ~/.recall/sessions/<id>.md  +  ~/.recall/index.md   (redacted, readable)
-```
+![recall architecture: capture streams flow into ~/.recall, are redacted and correlated by the recall.py engine, and render to titled Markdown sessions plus an index](docs/architecture.png)
+
+## The entire context, not just the shell
+
+Recalling a window gives you the whole picture — not just the commands (see
+[`reference/context.md`](skills/recall/reference/context.md)):
+
+- **Conversation.** The AI CLI agent transcript from that window — Claude Code, aider, and others
+  via **pluggable adapters** (`RECALL_AGENTS`). Each agent's native store is normalized to one
+  shape, rendered to a redacted transcript, and **correlated** to the terminal session by working
+  directory (or git root) and overlapping time.
+- **Files changed & git.** Repo, branch, commits made during the session, a per-file
+  added/removed table, and a capped, redacted diff.
+- **Context trail.** Every directory visited plus a small allow-listed snapshot of the environment
+  at session start.
+- **Titled files.** Named from the correlated conversation's title (or the repo + distinctive
+  commands), so `add-greeting-feature-to-proj--195fa6.md` beats an opaque id. The terminal id and
+  title are stored in metadata and shown in the session header.
 
 ## Works all the time
 
@@ -67,6 +84,7 @@ Capture is layered so you always get *something*:
 | `/recall:search` | Grep all rendered sessions for a term |
 | `/recall:resume` | Reprint the last/this-window session's dir + recent commands to pick up where you left off |
 | `/recall:snapshot` | Re-render every session now (what the interval scheduler runs) |
+| `/recall:ingest` | Import AI CLI conversations (Claude Code, aider, …) so sessions carry their full context |
 
 ## Install
 
@@ -90,14 +108,16 @@ Open a new terminal — capture starts automatically.
 - `scripts/recall.{zsh,bash}` — the shell integrations (guards → session env → `script` re-exec →
   hooks).
 - `scripts/recall.sh` — fast dispatcher; the per-command `log` is pure shell.
-- `scripts/recall.py` — render + query engine (stdlib only): render / snapshot / list / show /
-  search / resume / redact / setup.
+- `scripts/recall.py` — render + query + ingest engine (stdlib only): render / ingest / snapshot /
+  list / show / search / resume / redact / setup.
+- `scripts/adapters.py` — pluggable AI-agent conversation adapters (Claude Code, aider, …).
 - `scripts/install-scheduler.sh` — launchd / cron installer.
 - `scripts/scan_secrets.sh` — CI guard.
 
 See [`skills/recall/SKILL.md`](skills/recall/SKILL.md) and the reference docs
 ([architecture](skills/recall/reference/architecture.md),
 [capture](skills/recall/reference/capture.md),
+[context](skills/recall/reference/context.md),
 [privacy](skills/recall/reference/privacy.md),
 [scheduler](skills/recall/reference/scheduler.md)).
 

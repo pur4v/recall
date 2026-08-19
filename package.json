@@ -1,13 +1,14 @@
 {
   "name": "recall-skill",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "recall — capture & recall terminal session history. Kit = tooling, captured data lives in ~/.recall, never here.",
+  "description": "recall — capture & recall a terminal window's entire working context (commands, output, AI CLI conversation, diffs, git, trail). Kit = tooling, captured data lives in ~/.recall, never here.",
   "license": "MIT",
   "author": "pur4v",
   "scripts": {
-    "check": "python3 -m py_compile skills/recall/scripts/recall.py && for f in skills/recall/scripts/*.sh; do sh -n \"$f\"; done && bash -n skills/recall/scripts/recall.bash",
+    "check": "python3 -m py_compile skills/recall/scripts/recall.py skills/recall/scripts/adapters.py && for f in skills/recall/scripts/*.sh; do sh -n \"$f\"; done && bash -n skills/recall/scripts/recall.bash",
     "scan-secrets": "sh skills/recall/scripts/scan_secrets.sh .",
+    "ingest": "python3 skills/recall/scripts/recall.py ingest",
     "snapshot": "python3 skills/recall/scripts/recall.py snapshot",
     "list": "python3 skills/recall/scripts/recall.py list"
   }

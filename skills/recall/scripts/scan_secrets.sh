@@ -9,9 +9,9 @@ ROOT=${1:-.}
 fail=0
 
 # Files that should never be committed (captured history lives in ~/.recall, not the repo).
-if git -C "$ROOT" ls-files 2>/dev/null | grep -Eq '(^|/)\.recall/|\.log$|\.jsonl$|/raw/|/sessions/.*\.md$'; then
+if git -C "$ROOT" ls-files 2>/dev/null | grep -Eq '(^|/)\.recall/|\.log$|\.jsonl$|/raw/|/sessions/.*\.md$|/conversations/.*\.md$|/diff/.*\.patch$'; then
   echo "scan_secrets: captured-session artifacts are tracked — they must not be committed" >&2
-  git -C "$ROOT" ls-files | grep -E '(^|/)\.recall/|\.log$|\.jsonl$|/raw/' >&2
+  git -C "$ROOT" ls-files | grep -E '(^|/)\.recall/|\.log$|\.jsonl$|/raw/|/conversations/.*\.md$|/diff/.*\.patch$' >&2
   fail=1
 fi
 

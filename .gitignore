@@ -21,6 +21,10 @@ sessions/
 *.jsonl
 *.log
 
+# diagram source — only the exported PNG (docs/architecture.png) is committed
+*.drawio
+*.drawio.bkp
+
 # secrets / auth — NEVER commit
 .env
 .env.*
